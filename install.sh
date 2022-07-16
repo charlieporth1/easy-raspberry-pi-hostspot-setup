@@ -6,13 +6,15 @@ BIN_INSTALL_DIR=/usr/local/bin
 
 #install packages
 sudo apt update
-
+'''
 if [[ -z `which hostapd` ]]; then
 	sudo apt install -y hostapd
 fi
 if [[ -z `which dnsmasq` ]]; then
 	sudo apt install -y dnsmasq
 fi
+'''
+sudo apt install -y hostapd dnsmasq netfilter-persistent iptables-persistent
 sudo DEBIAN_FRONTEND=noninteractive apt install -y netfilter-persistent iptables-persistent
 #DNMSAQ BK
 sudo cp -rf $CONFIG_INSTALL_DIR/dhcpcd.conf $CONFIG_INSTALL_DIR/dhcpcd.conf.bk $CONFIG_INSTALL_DIR/dhcpcd.conf.bk.org
@@ -22,4 +24,12 @@ cp -rf $SETUP_FILES_DIR/hostapd/* $CONFIG_INSTALL_DIR/hostapd/
 chmod 777 ./*.sh
 ln -s $SETUP_FILES_DIR/start_ap.sh $BIN_INSTALL_DIR
 echo "start_ap.sh" >> /etc/rc.local
-
+systemctl stop hostapd
+systemctl enable hostapd
+systemctl start hostapd
+systemctl stop dnsmasq
+sudo systemctl stop systemd-resolved
+sudo systemctl disable systemd-resolved
+sudo systemctl mask systemd-resolved
+sudo apt-get install --reinstall resolvconf
+sudo apt-get remove --purge resolvconf && sudo apt-get install resolvconf
